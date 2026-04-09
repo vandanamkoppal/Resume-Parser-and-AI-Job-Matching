@@ -13,7 +13,7 @@ mongoose.connect(process.env.MONGO_URI)
     .catch(err => console.log(err));
 
 app.use('/api/upload', require('./routes/upload'));
-app.use('/api/cadidates', require('./routes/candidate'));
+app.use('/api/candidates', require('./routes/candidate'));
 app.use('/api/jobs', require('./routes/jobs'));
 
 app.listen(process.env.PORT, () =>

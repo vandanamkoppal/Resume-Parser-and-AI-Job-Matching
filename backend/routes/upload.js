@@ -1,16 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const pdfParse = require('pdf-parse');
 const fs = require('fs');
 const upload = require('../middleware/upload');
 const Candidate = require('../models/Candidate');
 
+function extractTextFromBuffer(buffer) {
+  // Simple PDF text extraction
+  const str = buffer.toString('latin1');
+  const matches = str.match(/\(([^)]{2,100})\)/g) || [];
+  return matches.map(m => m.slice(1,-1)).join(' ');
+}
+
 function parseResume(text) {
   if (!text) return {};
-
   const emailMatch = text.match(/[\w.-]+@[\w.-]+\.\w+/);
   const phoneMatch = text.match(/(\+?\d[\d\s\-().]{7,}\d)/);
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const lines = text.split(/\s+/).filter(Boolean);
 
   const skillKeywords = ['javascript','react','node','python','mongodb',
     'express','html','css','java','sql','typescript','git','aws'];
@@ -24,7 +29,7 @@ function parseResume(text) {
   return {
     name: lines[0] || 'Unknown',
     email: emailMatch ? emailMatch[0] : '',
-    phone: phoneMatch ? phoneMatch[1] : '',
+    phone: phoneMatch ? phoneMatch[0] : '',
     skills,
     experience,
     education: text.toLowerCase().includes('master') ? 'Master' :
@@ -37,13 +42,10 @@ router.post('/', upload.single('resume'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
-    const dataBuffer = fs.readFileSync(req.file.path);
-    const pdfData = await pdfParse(dataBuffer);
+    const buffer = fs.readFileSync(req.file.path);
+    const text = extractTextFromBuffer(buffer);
+    const parsed = parseResume(text);
 
-    if (!pdfData || !pdfData.text)
-      return res.status(400).json({ error: 'Could not parse PDF' });
-
-    const parsed = parseResume(pdfData.text);
     const candidate = new Candidate({ ...parsed, resumePath: req.file.path });
     await candidate.save();
     res.json({ success: true, candidate });
