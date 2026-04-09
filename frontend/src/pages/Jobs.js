@@ -28,7 +28,7 @@ export default function Jobs() {
   };
 
   const scoreColor = (score) =>
-    score > 70 ? '#059669' : score >= 40 ? '#d97706' : '#dc2626';
+    score >= 70 ? '#059669' : score >= 40 ? '#d97706' : '#dc2626';
 
   return (
     <div className="page">
@@ -76,9 +76,9 @@ export default function Jobs() {
               border:`3px solid ${scoreColor(result.totalScore)}`,color:scoreColor(result.totalScore)}}>
               {result.totalScore}%
             </div>
-            <span className={`badge ${result.totalScore>70?'badge-green':result.totalScore>=40?'badge-yellow':'badge-red'}`}
+            <span className={`badge ${result.totalScore>=70?'badge-green':result.totalScore>=40?'badge-yellow':'badge-red'}`}
               style={{fontSize:14}}>
-              {result.totalScore>70?'✅ Strong Match':result.totalScore>=40?'⚠️ Partial Match':'❌ Low Match'}
+              {result.totalScore>=70?'✅ Strong Match':result.totalScore>=40?'⚠️ Partial Match':'❌ Low Match'}
             </span>
           </div>
           <div className="grid-2">
